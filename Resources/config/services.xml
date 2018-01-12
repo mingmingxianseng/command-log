@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+        <service id="command_log.listener" class="mmxs\Bundle\CommandLogBundle\EventListener\CommandListener">
+            <argument>%command.log.options%</argument>
+            <argument type="service" id="logger"/>
+            <argument type="service" id="command.log.handle.factory"/>
+            <tag name="kernel.event_subscriber"/>
+        </service>
+        <service id="command.log.handle.factory" class="mmxs\Bundle\CommandLogBundle\Model\Factory">
+            <argument type="service" id="service_container"/>
+        </service>
+    </services>
+</container>
