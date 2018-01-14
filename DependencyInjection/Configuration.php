@@ -29,6 +29,8 @@ class Configuration implements ConfigurationInterface
                         ->children()
                             ->scalarNode('base_uri')->end()
                             ->scalarNode('debug')->defaultValue(false)->end()
+                            ->scalarNode('timeout')->defaultValue(3)->end()
+                            ->scalarNode('verify')->defaultValue(false)->end()
                         ->end()
                 ->end()
             ->end();
