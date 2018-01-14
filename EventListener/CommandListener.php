@@ -104,6 +104,9 @@ class CommandListener implements EventSubscriberInterface
         ]);
     }
 
+    /**
+     * @param ConsoleErrorEvent $event
+     */
     public function onCommandError(ConsoleErrorEvent $event)
     {
         $key = $this->getKey($event->getCommand());
