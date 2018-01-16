@@ -8,7 +8,6 @@
 
 namespace mmxs\Bundle\CommandLogBundle\Model;
 
-
 use Psr\Log\LoggerInterface;
 
 class LoggerHandler implements HandlerInterface
@@ -33,6 +32,19 @@ class LoggerHandler implements HandlerInterface
     public function handleTerminate(string $token, array $data)
     {
         $this->logger->info("command terminate. [{$token}]", $data);
+    }
+
+    /**
+     * handleProgress
+     *
+     * @author chenmingming
+     *
+     * @param string $token
+     * @param array  $data
+     */
+    public function handleProgress(string $token, array $data)
+    {
+        $this->logger->info("command progress. [{$token}]", $data);
     }
 
 }

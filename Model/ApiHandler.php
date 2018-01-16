@@ -8,7 +8,6 @@
 
 namespace mmxs\Bundle\CommandLogBundle\Model;
 
-
 use GuzzleHttp\Client;
 
 class ApiHandler implements HandlerInterface
@@ -16,6 +15,7 @@ class ApiHandler implements HandlerInterface
     const PATH_START = 'command/{token}/start';
     const PATH_ERROR = 'command/{token}/error';
     const PATH_TERMINATE = 'command/{token}/terminate';
+    const PATH_PROGRESS = 'command/{token}/progress';
     private $options = [
         'client_options' => [
             'base_uri' => '',
@@ -63,6 +63,21 @@ class ApiHandler implements HandlerInterface
         try {
             $this->client->post(
                 str_replace('{token}', $token, self::PATH_TERMINATE),
+                ['json' => $data]
+            );
+        } catch (\Exception $e) {
+
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function handleProgress(string $token, array $data)
+    {
+        try {
+            $this->client->post(
+                str_replace('{token}', $token, self::PATH_PROGRESS),
                 ['json' => $data]
             );
         } catch (\Exception $e) {

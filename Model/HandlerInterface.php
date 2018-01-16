@@ -8,7 +8,6 @@
 
 namespace mmxs\Bundle\CommandLogBundle\Model;
 
-
 interface HandlerInterface
 {
     public function handleStart(string $token, array $data);
@@ -16,4 +15,6 @@ interface HandlerInterface
     public function handleError(string $token, array $data);
 
     public function handleTerminate(string $token, array $data);
+
+    public function handleProgress(string $token, array $data);
 }

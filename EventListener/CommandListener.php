@@ -8,7 +8,8 @@
 
 namespace mmxs\Bundle\CommandLogBundle\EventListener;
 
-
+use mmxs\Bundle\CommandLogBundle\CommandProgressEvent;
+use mmxs\Bundle\CommandLogBundle\Events;
 use mmxs\Bundle\CommandLogBundle\Model\Factory;
 use mmxs\Bundle\CommandLogBundle\Model\HandlerInterface;
 use Psr\Log\LoggerInterface;
@@ -27,9 +28,9 @@ class CommandListener implements EventSubscriberInterface
     private $logger;
     private $options = [
         'namespace' => 'command.log',
-        'handler' => [
-            'type' => 'logger'
-        ]
+        'handler'   => [
+            'type' => 'logger',
+        ],
     ];
 
     /**
@@ -41,13 +42,14 @@ class CommandListener implements EventSubscriberInterface
 
     /**
      * CommandListener constructor.
-     * @param array $options
+     *
+     * @param array           $options
      * @param LoggerInterface $logger
-     * @param Factory $factory
+     * @param Factory         $factory
      */
     public function __construct($options = [], LoggerInterface $logger, Factory $factory)
     {
-        $this->logger = $logger;
+        $this->logger  = $logger;
         $this->options = array_merge($this->options, $options);
         $this->handler = $factory->create($this->options['handler']);
 
@@ -60,17 +62,19 @@ class CommandListener implements EventSubscriberInterface
 
     /**
      * onCommandStart
+     *
      * @author chenmingming
+     *
      * @param ConsoleCommandEvent $event
      */
     public function onCommandStart(ConsoleCommandEvent $event)
     {
         $command = $event->getCommand();
-        $input = $event->getInput();
+        $input   = $event->getInput();
 
         $key = $this->getKey($command);
         if (!isset(self::$tokens[$key])) {
-            self::$tokens[$key] = uniqid();
+            self::$tokens[$key] = uniqid($this->options['namespace']);
         }
         $commandStr = 'php bin/console ' . implode(" ", $input->getArguments());
         foreach ($input->getOptions() as $k => $v) {
@@ -81,11 +85,11 @@ class CommandListener implements EventSubscriberInterface
         }
 
         $data = [
-            'name' => $command->getName(),
+            'name'        => $command->getName(),
             'description' => $command->getDescription(),
-            'namespace' => $this->options['namespace'],
-            'command' => $commandStr,
-            'env' => PHP_SAPI
+            'namespace'   => $this->options['namespace'],
+            'command'     => $commandStr,
+            'env'         => PHP_SAPI,
         ];
         $this->logger->info('command data', ['data' => $data]);
         $this->handler->handleStart(self::$tokens[$key], $data);
@@ -99,8 +103,8 @@ class CommandListener implements EventSubscriberInterface
         }
         $this->logger->info('exitCode:' . $event->getExitCode(), ['']);
         $this->handler->handleTerminate(self::$tokens[$key], [
-            'memory_usage' => memory_get_usage(true),
-            'memory_peak_usage' => memory_get_peak_usage(true)
+            'memory_usage'      => memory_get_usage(true),
+            'memory_peak_usage' => memory_get_peak_usage(true),
         ]);
     }
 
@@ -115,7 +119,24 @@ class CommandListener implements EventSubscriberInterface
         }
         $this->logger->error($event->getError()->__toString(), ['content']);
         $this->handler->handleError(self::$tokens[$key], [
-            'exception' => $event->getError()->__toString()
+            'exception' => $event->getError()->__toString(),
+        ]);
+    }
+
+    /**
+     * onCommandProgress
+     * @author chenmingming
+     * @param CommandProgressEvent $event
+     */
+    public function onCommandProgress(CommandProgressEvent $event)
+    {
+        $key = $this->getKey($event->getCommand());
+        if (!isset(self::$tokens[$key])) {
+            return;
+        }
+        $this->handler->handleProgress(self::$tokens[$key], [
+            'percentage' => $event->getPercentage(),
+            'data'       => $event->getData(),
         ]);
     }
 
@@ -124,11 +145,13 @@ class CommandListener implements EventSubscriberInterface
         if (!class_exists(ConsoleEvents::class)) {
             return [];
         }
+
         // Register early to have a working dump() as early as possible
         return [
-            ConsoleEvents::COMMAND => 'onCommandStart',
+            ConsoleEvents::COMMAND   => 'onCommandStart',
             ConsoleEvents::TERMINATE => 'onCommandTerminate',
-            ConsoleEvents::ERROR => 'onCommandError'
+            ConsoleEvents::ERROR     => 'onCommandError',
+            Events::PROGRESS         => 'onCommandProgress',
         ];
     }
 
