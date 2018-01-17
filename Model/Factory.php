@@ -8,7 +8,6 @@
 
 namespace mmxs\Bundle\CommandLogBundle\Model;
 
-
 use Psr\Container\ContainerInterface;
 
 class Factory
@@ -25,8 +24,11 @@ class Factory
 
     /**
      * create
+     *
      * @author chenmingming
+     *
      * @param array $option
+     *
      * @return HandlerInterface
      */
     public function create(array $option)
@@ -34,8 +36,16 @@ class Factory
         switch ($option['type']) {
             case 'api':
                 return new ApiHandler($option);
-            default:
+            case 'logger':
                 return new LoggerHandler($this->container->get('logger'));
+            default:
+
+                if ($this->container->has($option['type'])
+                    && $this->container->get($option['type']) instanceof HandlerInterface
+                ) {
+                    return $this->container->get($option['type']);
+                }
+                throw new \InvalidArgumentException("type is invalid.[{$option['type']}]");
         }
     }
 }

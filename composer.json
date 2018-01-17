@@ -20,7 +20,8 @@
   },
   "require-dev": {
     "symfony/config": "~2.8|~3.0",
-    "guzzlehttp/guzzle": "~6.3"
+    "guzzlehttp/guzzle": "~6.3",
+    "phpunit/phpunit": "^6.5"
   },
   "autoload": {
     "psr-4": {
